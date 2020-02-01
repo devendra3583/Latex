@@ -1,0 +1,1132 @@
+\documentclass{beamer}
+\usepackage{hyperref}
+\mode<presentation>{\usetheme{CambridgeUS}}
+\bibliographystyle{ieeetr}
+%\bibliographystyle{plain}
+\setbeamertemplate{bibliography item}[text]
+
+
+\setbeamertemplate{caption}[numbered]
+
+\title[Palmprint based Recognition System]{Palmprint based Recognition System robust to partial occlusion}
+\author[Devendra Kumar Arya]{Devendra Kumar Arya (Y5827165) \\*[.2in] Under the supervision of \\ Prof. Phalguni Gupta}
+\institute[IITK]{Computer Science and Engineering \\Indian Institute of Technology, Kanpur}
+\AtBeginSection[]
+{
+\begin{frame}<beamer>
+\frametitle{Section}
+\tableofcontents[sectionstyle=show/shaded,
+  subsectionstyle=show/show/hide]
+\end{frame}
+}
+\setcounter{tocdepth}{1}
+%--------------------------------------------------------------------------------
+%Title Page
+\begin{document}
+\begin{frame}
+  \titlepage
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Overview}
+  \tableofcontents
+\end{frame}
+\setcounter{tocdepth}{2}
+%--------------------------------------------------------------------------------
+%Problem Statement
+\section{Introduction}
+\begin{frame}
+\begin{itemize}
+    \item Biometric based recognition is the technique of automatic identification or verification of a person with the help of his physiological or behavioral characteristics
+    \begin{itemize}
+	\item Physiological characteristics include finger scans, hand scans, retinal scans, iris, face, palmprint scans
+	\item Behavioral characteristics include voice scans, keystroke scans (typing rythm) and signature scans
+    \end{itemize}
+    \item Biometric based recognition has several advantages over traditional methods: token based approach and knowledge based approach
+    \begin{itemize}
+	\item A biometric trait cannot be easily transferred, forgotten or lost
+	\item The rightful owner of the biometric template can be easily identified
+	\item It is difficult to duplicate a biometric trait
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+  \frametitle{a typical Biometric System Architechture}
+	\begin{figure}
+	\begin{center}
+	\includegraphics[scale=0.3]{images/BSA.png}
+	\caption{Biometric System Architechture}
+	\label{fig:bsa}
+	\end{center}
+	\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Properties of an Effective Biometric trait}
+\begin{description}
+	\item [Universality: ]Every person should have the biometric characteristic
+	\item [Uniqueness: ]No two persons should be the same in terms of biometric characteristic
+	\item [Permanence: ]The biometric characteristic should be invariant over time
+	\item [Collectability: ]The biometric characteristic should be measurable with some sensing device
+	\item [Acceptability: ]Population should have no objection to providing the biometric
+	\item [Performance: ]It refers to achievable accuracy and speed
+	\item [Circumvention: ]A measure of the way to forge the system using fraudulent methods
+\end{description}
+\end{frame}
+
+\begin{frame}
+\frametitle{Why Palmprint?}
+\begin{itemize}
+	\item A palmprint based biometric system has high user acceptability
+	\item Even the palmprints of mono-zygotic twins are distinct
+	\item Palmprint is regarded as one of the most stable, unique and reliable characteristics 
+	\item Palm exhibits very little change in its structure due to aging
+	\item High recognition rates can be obtained by utilizing even low resolution palmprint images
+	\item People (general public) consider to provide their palmprints as non-intrusive
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Motivation}
+\begin{itemize}
+	\item Biometric based recognition systems (face, iris, ear, palmprint) use an image obtained from an acqusition device for person recognition
+	\item In many cases, it has been observed that the acquired images are partially occluded i.e. they have a portion of the image as unavailable
+	\begin{itemize}
+	 \item the person from whom the sample is being collected has injuries or is physically challenged
+	 \item    misallignment of the acquisition device with respect to the trait while collecting the sample
+	\end{itemize}
+
+	\item In such boundary cases:
+	\begin{itemize}
+	 \item system entirely rejects/accepts the person (this happens when the system is not robust to partial occlusions)
+	 \item Such cases are handled manually
+	\end{itemize}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Problem Definition}
+To design an efficient palmprint based recognition system which is robust to partial occlusion\\
+Desirable features of the system:
+ \begin{itemize}
+ 	\item It should perform well with low resolution palmprint images so that even a low cost scanner
+can be used to achieve efficient performances
+  	\item It should perform equally well with acquisition devices which have constraints using pegs as
+well as those which are pegs-free so that physically challenged people can also be
+enrolled and recognized
+  \end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\section{Preliminaries}
+\begin{frame}
+\frametitle{Identification}
+\begin{figure}[htp]
+\begin{center}
+\includegraphics[scale=0.3]{images/identification.pdf}
+\caption{Identification\label{identification} }
+\end{center}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Verification}
+\begin{figure}[htp]
+\begin{center}
+\includegraphics[scale=0.3]{images/verification.pdf}
+\caption{Verification\label{verification} }
+\end{center}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Palm features}
+Approaches for palmprint based recognition can be classified into two categories based on palm features: Structural Palm features, Statistical Palm features
+	\begin{description}
+	\item [Structural Palm features: ]These features are based on hand geometry, minutiae points, wrinkles, principle lines,
+delta points etc.
+  	\item [Statistical Palm features: ] fourier transform, Discrete Cosine Transform, K-L transform, 2 D Gabor phase encoding, SIFT, SURF operators
+	\end{description}
+\end{frame}
+
+%-----------------------------------------------------------
+\begin{frame}
+\frametitle{Force Field Transformation [Hurley \emph{et. al.}]}
+Given an image $f$: x $\times$ y $\rightarrow$ $P$ where $P$ is a value in [0, 255] gray scale intensity levels. Each pixel is assumed to generate a spherically 
+symmetrical force field. \cite{forcefield}
+
+The force $\textbf{F}_i$(\textbf{r}) 
+exerted on a pixel of unit intensity at the pixel location with position vector \textbf{r} by a remote pixel with position vector $\textbf{r}_i$ and pixel intensity P({$\textbf{r}_i$}) is given by
+\begin{equation}
+\textbf{F}_i(\textbf{r}) = P(\textbf{r}_i) \frac{\textbf{r}_i - \textbf{r}}{{|\textbf{r}_i - \textbf{r}|}^{3}}
+ \end{equation}
+[1] D. J. Hurley, M. S. Nixon, J. N. Carter. Force Field Functionals for Image Feature Extraction. \emph{Image and Vision Computing}, 20(5-6):311-317, 2002
+\end{frame}
+
+%---------
+\begin{frame}
+  \frametitle{Contd..}
+	\begin{figure}
+	\begin{center}
+	\includegraphics[scale=0.5]{images/ffim.pdf}
+	\caption{Direction of forces exerted by a pixel of unit intensity located at position 
+vector r due to eight pixels (with position vectors: $\textbf{r}_0$
+$\textbf{r}_1$ $\textbf{r}_2$ $\textbf{r}_3$ $\textbf{r}_5$ $\textbf{r}_6$ $\textbf{r}_7$ ) in its
+neighbourhood. Source [1]
+}
+	\label{fig:ffim}
+	\end{center}
+	\end{figure}
+\end{frame}
+
+%----
+\begin{frame}
+\frametitle{Local Structure Tensor}
+	\begin{itemize}
+		\item Palmprint image is rich in texture \cite{book}
+		\item Local orientation is a very big component of the texture present in an image 
+		\item Local Structure tensor (LST) is a tensor representation of this orientation in multi-dimensional signals \cite{multi} 
+		\item Local Structure Tensor (LST) is widely accepted to provide a compact representation of this local orientation \cite{bigun_granlund_lit_lst_acc_as_c_r_orient}
+	\end{itemize}
+\end{frame}
+
+%--
+\begin{frame}
+\frametitle{Local Structure Tensor}
+\begin{itemize}
+\item The computation of the local structure tensor components 
+%\cite{booktip} 
+are given by the following formulation:
+\begin{equation}
+\textbf{T}(\textbf{x}_0) = \frac{1}{4{\pi}^{2}} \; \int_{\textbf{x} \; \epsilon \; \Omega(\text{x}_0)} \frac{\partial f}{\partial x_{i}}  \frac{\partial f}{\partial y_{j}} 
+\; \mathrm{d}\textbf{x}
+\end{equation}
+where $\Omega(x_{0})$ is a local neighbourhood of the function f(\textbf{x}) around the point $\textbf{x}_{0}$ where the structure tensor is going to be estimated.
+\item Discrete version of this equation is:
+\begin{equation}
+\textbf{T}(\textbf{x}_0) = G_{\sigma}(\textbf{x}_0) \ast (\bigtriangledown f(\textbf{x}_0) \bigtriangledown^{T} f(\textbf{x}_0))
+\end{equation}
+where $G_{\sigma}$ is a Gaussian filter of standard deviation $\sigma$
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{LST matrix of a pixel}
+ \begin{figure}[htp]
+\begin{center}
+\includegraphics[scale=0.3]{images/lst_of_a_pixel.pdf}
+\caption{LST matrix of a pixel\label{lst_pixel} }
+\end{center}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+ \frametitle{Contd..}
+\begin{equation}
+  G(x,y) = \frac{1}{2 \pi \sigma} e^{-\frac{x^2 + y^2}{2 \sigma^2}}
+ \end{equation}
+
+ \begin{equation}
+  G_x = \frac{\partial}{\partial x} G
+ \end{equation}
+
+\begin{equation}
+  G_y = \frac{\partial}{\partial y} G
+ \end{equation}
+
+\begin{equation}
+  I * G_x = I_x
+ \end{equation}
+
+\begin{equation}
+  I * G_y = I_y
+ \end{equation}
+
+%     \begin{itemize}
+%      \item G(x,y) = 
+%     \end{itemize}
+
+\end{frame}
+
+
+%--------------------------------------------------------------------------------
+%Solution
+\section{Proposed System}
+\begin{frame}
+\frametitle{Flow Diagram}
+	\begin{figure}
+	\begin{center}
+	\includegraphics[scale=0.23]{images/proposed_system.png}
+	\caption{bsa}
+	\label{fig:bsa}
+	\end{center}
+	\end{figure}
+\end{frame}
+
+%---------------------
+
+
+\subsection{Region of Interest (ROI) Extraction}
+\begin{frame}
+\frametitle{Region of Interest (ROI) Extraction}
+Hand image obtained from the acquisition device is first binarized and then hand contour is obtained
+using contour tracing algorithm \cite{nareshthesis}.
+\begin{figure}
+	\begin{center}
+	\includegraphics[scale=0.2]{images/contour.png}
+	\caption{(a) Hand image (b) Binarized image (c) Hand contour}
+	\label{contour}
+	\end{center}
+	\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Contd..}
+    	\begin{itemize}
+		\item Fingertip and valley co-ordinates are obtained from local maxima and minima on the contour image
+		\item Two reference points, (1) $V_1$, the valley point between ring finger and little finger, and (2) $V_2$, the valley point between forefinger and middle finger, are taken on the contour
+		\item The two reference points are then connected with a line as shown in the figure
+  	\end{itemize}
+  	
+  	\begin{figure}
+	\begin{center}
+	\includegraphics[scale=0.3]{images/palm_extraction.pdf}
+	\caption{(a) Hand contour showing reference points: $V_1$, $V_2$. (b) ROI on hand contour. (c) ROI shown in gray-scale image. (d) Extracted ROI (palmprint).
+\label{palm_extraction} }
+	\end{center}
+	\end{figure}
+\end{frame}
+
+%-------
+\begin{frame}
+\frametitle{Contd..}
+    	\begin{itemize}
+		\item Two lines, $L_1$ and $L_2$, are drawn at angles 45 degree and 60 degree at points $V_1$ and $V_2$ respectively
+		\item Let $C_1$ and $C_2$ be the 2 points where  $L_1$ and $L_2$ meet the hand boundary
+		\item The two midpoints  $M_1$ and $M_2$ of the two line segment joining $V_1$ and $C_1$, and, $V_2$ and $C_2$, respectively
+are obtained
+		\item With the 
+line $M_1$ $-$ $M_2$ as a side, a square is drawn.  This square region is the Region Of Interest (ROI) and is termed as \emph{palmprint}
+  	\end{itemize}
+  	
+\end{frame}
+
+\subsection{Palmprint Enhancement}
+\begin{frame}
+ \frametitle{Palmprint Enhancement}
+ \begin{itemize}
+ 	\item The palmprint obtained  has non-uniform brightness due to non-uniform reflection of light from the surface of the palm having a small curvature 
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+ \frametitle{Palmprint Enhancement}
+ \begin{itemize}
+ 	\item The palmprint is divided into $32 \times 32$ sub-blocks and mean for each sub-block is computed. This provides an estimate of the background reflection
+ 	\item The estimated background reflection is expanded using bicubic interpolation to original size of palmprint
+image
+	\item Estimated reflection is subtracted from the original image. This compensates the
+variation of brightness across the image, as a result of which, a uniform brightness or illumination
+corrected palmprint image is obtained
+	\item Histogram equalization is then performed on $64 \times 64$ blocks for contrast enhancement of the uniform brightness or illumination corrected image to obtain enhanced palmprint
+\end{itemize}
+Wang \emph{et. al.} \cite{iris_enhance} have used a similar procedure for texture enhancement in iris images
+\end{frame}
+
+%-----
+\begin{frame}
+	\frametitle{Contd..}
+	\begin{figure}[htp]
+\begin{center}
+\includegraphics[scale=0.3]{images/palm_enhance.pdf}
+\caption{(a) Extracted palmprint. (b) Estimated coarse reflection. (c) Uniform brightness palmprint image. (d) Enhanced palmprint image.
+\label{palm_enhance} }
+\end{center}
+\end{figure}
+\end{frame}
+
+
+\subsection{Sub-image based Feature Extraction}
+
+\begin{frame}
+\frametitle{Sub-image based Feature Extraction}
+	\begin{itemize}
+		\item The enhanced palmprint P (of size $n \times n$) is divided into $m \times m$ subimages
+		\item Features are extracted from each sub-image
+	\end{itemize}
+	\begin{figure}[htp]
+\begin{center}
+\includegraphics[scale=0.5]{images/1_1.pdf}
+\caption{A palmprint image partitioned into $5 \times 5$ = $25$ sub-images\label{sub_im} }
+\end{center}
+\end{figure}
+\end{frame}
+
+%Threats
+\begin{frame}
+ \frametitle{Feature Extraction using Local Structure Tensor}
+  \begin{enumerate}
+    \item The original enhanced palmprint image (let us say, image $I$ with dimensions n $\times$ n)is divided into m $\times$ m sub-images 
+  \item For each sub-image $I_{sub}$, obtain the Gaussian based filters,
+$G_x$ and $G_y$ and convolve the image $I_{sub}$ to obtain the gradients $(I_{sub})_{x}$ and $(I_{sub})_{y}$ respectively 
+  \item For each pixel $p_i$ that belongs to sub-image $I_{sub}$, the structure tensor matrix $T_{p_{i}}$ is obtained:
+\begin{equation}
+ T_{p_{i}} = \begin{bmatrix} (I_{sub})_x(p_i) (I_{sub})_x(p_i) & & & (I_{sub})_x(p_i) (I_{sub})_y(p_i) \\ (I_{sub})_x(p_i) (I_{sub})_y(p_i) & & & (I_{sub})_y(p_i) (I_{sub})_y(p_i) \end{bmatrix}
+\end{equation}
+  %\item Obtain the mean of $T_{p_{i}}$. Let the $2 \times 2$ mean matrix be denoted by $T_{sub}$
+  \end{enumerate}
+  \begin{figure}[htp]
+\begin{center}
+\includegraphics[scale=0.14]{images/lst_of_a_pixel.pdf}
+\caption{LST matrix of a pixel\label{lst_of_a_pixel} }
+\end{center}
+\end{figure}
+ \end{frame}
+ 
+\begin{frame}
+ \frametitle{Feature Extraction using Local Structure Tensor}
+\begin{equation}
+ T_{sub} = \frac{1}{\# I_{sub}}\begin{bmatrix} \displaystyle\sum_{p_i \epsilon I_{sub}} (I_{sub})_x(p_i) (I_{sub})_x(p_i) & & & \displaystyle\sum_{p_i \epsilon I_{sub}} (I_{sub})_x(p_i) (I_{sub})_y(p_i) \\ \displaystyle\sum_{p_i \epsilon I_{sub}} (I_{sub})_x(p_i) (I_{sub})_y(p_i) & & & \displaystyle\sum_{p_i \epsilon I_{sub}} (I_{sub})_y(p_i) (I_{sub})_y(p_i) \end{bmatrix}
+\end{equation}
+\end{frame}
+ 
+ 
+%--
+\begin{frame}
+ \frametitle{Feature Extraction using Local Structure Tensor}
+  \begin{enumerate}
+    \item The original enhanced palmprint image (let us say, image $I$ with dimensions n $\times$ n)is divided into m $\times$ m sub-images
+  \item For each sub-image $I_{sub}$, obtain the Gaussian based filters,
+$G_x$ and $G_y$ and convolve the image $I_{sub}$ to obtain the gradients $(I_{sub})_{x}$ and $(I_{sub})_{y}$ respectively 
+  \item For each pixel $p_i$ that belongs to sub-image $I_{sub}$, the structure tensor matrix $T_{p_{i}}$ is obtained:
+\begin{equation}
+ T_{p_{i}} = \begin{bmatrix} (I_{sub})_x(p_i) (I_{sub})_x(p_i) & & & (I_{sub})_x(p_i) (I_{sub})_y(p_i) \\ (I_{sub})_x(p_i) (I_{sub})_y(p_i) & & & (I_{sub})_y(p_i) (I_{sub})_y(p_i) \end{bmatrix}
+\end{equation}
+  \item Obtain the mean of $T_{p_{i}}$. Let the $2 \times 2$ mean matrix be denoted by $T_{sub}$
+  \end{enumerate}
+ \end{frame}
+ 
+
+\begin{frame}
+	\frametitle{Contd..}
+		\begin{itemize}
+ 			\item Eigen decomposition is performed on $T_{sub}$ to obtain two principal components 
+ 			\item Let $e_1$, $e_2$ be the two eigen vectors and $\lambda_1$, $\lambda_2$ the corresponding eigen values 
+ 			\item The dominant eigen vector \emph{i.e.} the eigen vector corresponding to the higher eigen value which stores more information regarding the change in the gradient is taken and is stored as the feature vector for the sub-image 
+ 			\item Similarly, a feature vector for each sub-image is obtained 
+ 			\item The feature matrix for the whole image $I$ is obtained by concatenation of individual feature vectors from each sub-image
+		\end{itemize} 
+\end{frame}
+
+
+
+
+
+\begin{frame}
+\frametitle{Contd..}
+\begin{equation}
+  \textbf{Feature matrix}_{I} = \begin{bmatrix} f_{1,1} & f_{1,2} & \cdots & f_{1,m}\\ f_{2,1} & f_{2,2} & \cdots & f_{2,m}\\ \vdots & \vdots & \cdots & \vdots \\ f_{m,1} & f_{m,2} & \cdots & f_{m,m}\end{bmatrix}
+\end{equation}
+where $f_{i,j}$ is the feature vector for the $(i,j)^{th}$ sub-image of the palmprint image $I$
+\end{frame}
+
+\begin{frame}
+\frametitle{Contd...}
+	\begin{figure}[htp]
+\begin{center}
+\includegraphics[scale=0.26]{ppt_images/algo1_1.png}
+\caption{Algo1\label{alg1} }
+\end{center}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Contd...}
+	\begin{figure}[htp]
+\begin{center}
+\includegraphics[scale=0.26]{ppt_images/algo1_2.png}
+%\caption{Algo1\label{alg1} }
+\end{center}
+\end{figure}
+\end{frame}
+
+\subsection{Force Field based Filter}
+\begin{frame}
+\frametitle{Force Field based Filter}
+\begin{itemize}
+	\item A force field based filter using the idea in \cite{forcefield} is proposed 
+   	\item Force Field based filter computes the impact of neighbourhood pixels on the central pixel 
+   	\item The Force Field based filter uses a $k \times k$ window which is passed with its centre falling on 
+each pixel of the image on turn 
+\end{itemize}
+\begin{figure}[htp]
+\begin{center}
+\includegraphics[scale=0.3]{images/fff.pdf}
+\caption{Force Field filter
+\label{fff} }
+\end{center}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Contd..}
+	\begin{itemize}	
+	\item Let the pixel at the centre of the $k \times k$ window be $r_{centre}$ 
+	\item The effect of each pixel in the vicinity of $r_{centre}$ falling under the window is computed using the following formula:
+	\end{itemize}
+	\begin{equation}
+\textbf{F}_i(\textbf{r}_{centre}) = P(\textbf{r}_i) \frac{\textbf{r}_i - \textbf{r}_{centre}}{|\textbf{r}_i - \textbf{r}_{centre}|^{3}} \times P({r}_{centre})
+ \end{equation}
+ 
+\begin{equation}
+\textbf{F}(\textbf{r}_{centre}) =  \sum_i \textbf{F}_i(\textbf{r}_{centre})
+ \end{equation}
+where $P(\textbf{r}_i)$ denotes the pixel value at $\textbf{r}_i$ and $i$ varies so as to include every pixel lying in the $k \times k$ window.
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{Contd..}
+	\begin{itemize}
+		\item a force F($i$,$j$) for every pixel of an image considering the 
+pulling effect of those pixels that lie in the $k \times k$ window that is applied to it can be obtained
+\begin{equation}
+F(i,j) = a \hat{i} +  b \hat{j}
+\end{equation} 
+		\item The direction of this force can be obtained by:
+\begin{equation}
+\theta(\textbf{r}) = tan^{-1} (\frac{b}{a})
+\end{equation}
+		\item The direction $\theta$ for a pixel holds the information telling the net pulling effect on a pixel due to its neighbourhood pixels
+		\item The value $\theta$ is the orientation of a pixel that it experiences due to all pixels falling in the $k \times k$ window combined
+	\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{dominant Orientation pixels of a sub-image}
+\begin{itemize}
+		\item In Algorithm 1, LST matrix is computed for each pixel. Computationwise, this is an expensive process 
+		\item A method in which LST matrix is evaluated only for certain special pixels is more desirable 
+		\item For each sub-image, a set of dominant pixels $D_{sub}$ is evaluated. These pixels are also referred to as \emph{dominant orientation pixels} 
+		\item LST matrix would then be evaluated only for these pixels
+	\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Computation of $D_{sub}$ the set of dominant Orientation pixels of a sub-image}
+ 	\begin{enumerate}
+		\item For an enhanced palmprint image [$I$], the corresponding filtered image [$F$] using force field based filter described earlier is obtained
+$F_{ij} = a \hat{i} + b \hat{j}$  
+  \item The direction matrix [$\theta$] which holds the orientation of each pixel with respect to force field in a window of size k $\times$ k is obtained 
+$\theta_{ij} = tan^{-1} (\frac{b}{a})$ 
+  \item Divide the matrix [$\theta$]  into  $m \times m$ cells where m corresponds to the number of sub-images features are to be extracted from 
+  \item For each cell, the orientation values which $\epsilon$ [0, 360] are distributed into 8 bins: $\theta_{min} - \theta_1$, $\theta_1 - \theta_2$, $\theta_2 - \theta_3$, $\cdots$, $\theta_7 - \theta_{max}$
+where $\theta_i = \theta_{min} + i * (\frac{\theta_{max} - \theta_{min}}{8})$    
+  \item A distribution histogram is plotted for the 8 bins. The bin with the highest frequency is considered as the dominant orientation of the cell. The pixels that are falling into this bin are collected and are said to belong to the set of dominant pixels $D_{sub}$
+	\end{enumerate}
+\end{frame}
+
+\begin{frame}
+\frametitle{Feature Extraction using Local Structure Tensor: Algorithm 2}
+\begin{enumerate}
+ \item The original enhanced palmprint image (let us say, image $I$ with dimensions n $\times$ n) is divided into m $\times$ m sub-images
+  \item For each sub-image $I_{sub}$, obtain the Gaussian based filters,
+%\ref{gaussian_x, gaussian_y}
+$G_x$ and $G_y$ and convolve the image $I_{sub}$ to obtain the gradients $(I_{sub})_{x}$ and $(I_{sub})_{y}$ respectively. 
+  \item For each pixel $p_i$ that belongs to sub-image $I_{sub}$ and the set $D_{sub}$ for that sub-image, the structure tensor matrix $T_{p_{i}}$ is obtained:
+\begin{equation}
+ T_{p_{i}} = \begin{bmatrix} (I_{sub})_x(p_i) (I_{sub})_x(p_i) & & & (I_{sub})_x(p_i) (I_{sub})_y(p_i) \\ (I_{sub})_x(p_i) (I_{sub})_y(p_i) & & & (I_{sub})_y(p_i) (I_{sub})_y(p_i) \end{bmatrix}
+\end{equation}
+  \item Obtain the mean of $T_{p_{i}}$. Let the $2 \times 2$ mean matrix be denoted by $T_{sub}$.
+\end{enumerate}
+\end{frame}
+
+\begin{frame}
+\frametitle{Feature Extraction using Local Structure Tensor: Algorithm 2 Contd..}
+\begin{equation}
+ T_{sub} = \frac{1}{\# D_{sub}} \begin{bmatrix} \displaystyle\sum_{p_i \epsilon I_{sub} \& D_{sub}}(I_{sub})_x(p_i) (I_{sub})_x(p_i)   \displaystyle\sum_{p_i \epsilon I_{sub} \& D_{sub}}(I_{sub})_x(p_i) (I_{sub})_y(p_i) \\ \displaystyle\sum_{p_i \epsilon I_{sub} \& D_{sub}}(I_{sub})_x(p_i) (I_{sub})_y(p_i)  \displaystyle\sum_{p_i \epsilon I_{sub} \& D_{sub}}(I_{sub})_y(p_i) (I_{sub})_y(p_i) \end{bmatrix}
+\end{equation}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Contd..}
+		\begin{itemize}
+ 			\item Eigen decomposition is performed on $T_{sub}$ to obtain two principal components
+ 			\item Let $e_1$, $e_2$ be the two eigen vectors and $\lambda_1$, $\lambda_2$ the corresponding eigen values
+ 			\item The dominant eigen vector \emph{i.e.} the eigen vector corresponding to the higher eigen value which stores more information regarding the change in the gradient is taken and is stored as the feature vector for the sub-image  			\item Similarly, a feature vector for each sub-image is obtained 
+ 			\item The feature matrix for the whole image $I$ is obtained by concatenation of individual feature vectors from each sub-image
+		\end{itemize} 
+\end{frame}
+
+
+
+
+
+\begin{frame}
+\frametitle{Contd..}
+\begin{equation}
+  \textbf{Feature matrix}_{I} = \begin{bmatrix} f_{1,1} & f_{1,2} & \cdots & f_{1,m}\\ f_{2,1} & f_{2,2} & \cdots & f_{2,m}\\ \vdots & \vdots & \cdots & \vdots \\ f_{m,1} & f_{m,2} & \cdots & f_{m,m}\end{bmatrix}
+\end{equation}
+where $f_{i,j}$ is the feature vector for the $(i,j)^{th}$ sub-image of the palmprint image $I$
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Contd...}
+	\begin{figure}[htp]
+\begin{center}
+\includegraphics[scale=0.26]{ppt_images/algo2_1.png}
+\caption{Algo1\label{alg1} }
+\end{center}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Contd...}
+	\begin{figure}[htp]
+\begin{center}
+\includegraphics[scale=0.26]{ppt_images/algo2_2.png}
+%\caption{Algo1\label{alg1} }
+\end{center}
+\end{figure}
+\end{frame}
+
+
+\subsection{Sub-image based Matching}
+
+\begin{frame}
+\frametitle{Sub-image based Matching}
+\begin{itemize}
+\item The difference between feature matrix of live palmprint and enrolled palmprint is calculated and is termed as \emph{matching score} 
+\item Depending on the value of the score with respect to a pre-defined threshold, a decision is made and the user is either declared as genuine or impostor 
+\item Let $L$ and $E$ be the feature matrices of the live palmprint ($LI$) and enrolled palmprint ($EI$) partitioned into $m \times m$ sub-images respectively.  
+\begin{equation}
+  L = \begin{bmatrix} l_{1,1} & l_{1,2} & \cdots & l_{1,m}\\ l_{2,1} & l_{2,2} & \cdots & l_{2,m}\\ \vdots & \vdots & \cdots & \vdots \\ l_{m,1} & l_{m,2} & \cdots & l_{m,m}\end{bmatrix}
+  E = \begin{bmatrix} e_{1,1} & e_{1,2} & \cdots & e_{1,m}\\ e_{2,1} & e_{2,2} & \cdots & e_{2,m}\\ \vdots & \vdots & \cdots & \vdots \\ e_{m,1} & e_{m,2} & \cdots & e_{m,m}\end{bmatrix}
+\end{equation}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Contd..}
+The live palmprint is said to have matched enrolled palmprint if:
+\begin{equation}
+\label{matching}
+\frac{\displaystyle\sum_{i=1}^{m} \sum_{j=1}^{m} ||l_{i,j} - e_{i,j}||}{m \times m} < Th
+\end{equation}
+where $Th$ is a pre-defined threshold, $||l_{i,j} - e_{i,j}||$ denotes the square of the modulus of the difference vector between $(i,j)^{th}$ sub-image of the live and enrolled palmprint
+\end{frame}
+
+\subsection{Robustness to Occlusion}
+\begin{frame}
+\frametitle{Robustness to Occlusion}
+	\begin{itemize}
+		\item Entropy is a statistical measure of randomness that characterises the texture of an image \cite{entropy_randomness}
+		\item Based on the entropy of a sub-image, it can either be classified as occluded or non-occluded
+		\item  Let $LI$ denote the live palmprint. Then the entropy of a 
+subimage $(i,j)$  of the palmprint $LI_{i,j}$ is given by
+\begin{equation}
+  - \displaystyle\sum_{x=0}^{255} LI_{i,j}^{x} * \log_{2} (LI_{i,j}^{x})
+\end{equation}
+where $LI_{i,j}^{x}$ denotes the number of pixels of intensity $x$ in the sub-image $LI_{i,j}$
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Contd..}
+Now, the live palmprint is said to have matched enrolled palmprint if:
+\begin{equation}
+  \frac{\displaystyle\sum_{i=1}^{m} \sum_{j=1}^{m} ||l_{i,j} - e_{i,j}|| \times Occ_{i,j}}{m \times m} < Th
+\end{equation}
+where $Occ_{i,j}$ is defined as
+
+\begin{equation}
+Occ_{i,j} =  
+\begin{cases} 1 & if - \displaystyle\sum_{x=0}^{255} LI_{i,j}^{x} * \log_{2} (LI_{i,j}^{x}) \le OccTh  \\ 0 & otherwise \end{cases} 
+\end{equation}
+where $OccTh$ is pre-defined randomness threshold
+\end{frame}
+
+\subsection*{Proposed System}
+\begin{frame}
+%\frametitle{User Space File System Framework} 
+\begin{figure}[htp]
+\begin{center}
+\includegraphics[scale=0.15]{images/proposed_system_overall.png}
+\caption{Proposed System\label{proposed_system_overall} }
+\end{center}
+\end{figure}
+\end{frame}
+
+\section{Experimental Results}
+\subsection{Performance Metrics}
+\begin{frame}
+Following metrics are used for measuring the performance of the proposed system:
+\begin{description}
+  \item [FAR (False Acceptance Rate): ]percentage of invalid matches
+  \item [GAR (Genuine Acceptance Rate): ]percentage of genuine matches
+  \item [FRR (False Rejection Rate): ]percentage of genuine users rejected. $FRR = 100 - GAR$.
+  \item [EER (Equal Error Rate): ]the rate at which FAR is equal to FRR. This parameter is used to compare two systems. Lower the EER better is the system.
+  \item [ROC curve: ]A system's performance can be changed by changing matching threshold. ROC($T$) = (FAR($T$), GAR($T$)) where $T$ is the threshold is a 
+curve that tells the trade-off between $FAR$ and $GAR$ as the matching threshold is varied
+\end{description}
+\end{frame}
+
+
+\subsection{Databases}
+\begin{frame}
+\frametitle{Databases}
+\begin{itemize}
+  \item IITK Palm Database: 183 different subjects, 3 images per subject $\Rightarrow$ 549 hand images
+  \item CASIA: 602 different subjects, 8 images per subject $\Rightarrow$ 5238 hand images
+  \item PolyU: 386 different subjects, 16 images per subject $\Rightarrow$ 7752 hand images
+\end{itemize}
+\end{frame}
+
+\subsection{Experiment 1}
+\begin{frame}
+\frametitle{IITK palm database}
+\begin{table}[ht]
+\centering
+\begin{tabular}{| l || l | l | l | l | l | }
+    \hline
+    \multicolumn{6}{|c|}{IITK}\\
+    \hline
+    \hline
+		  & 4 $\times$ 4 & 8 $\times$ 8 & 10 $\times$ 10 & 12 $\times$ 12 & 16 $\times$ 16 \\ \hline
+    \hline
+    Accuracy (\%) & 75.57        & 80.05	& 77.68		 & \textbf{80.53} & 80.56\\ \hline
+    FAR (\%) 	  & 20.56        & 7.66		& 3.84 	     	 & \textbf{11.30} & 9.92\\ \hline
+    FRR (\%)      & 28.28        & 32.23 	& 40.78 	 & \textbf{27.63} & 28.94\\ \hline
+    EER (\%)      & 25.68        & 22.36	& 22.36  	 & \textbf{22.41} & 22.85\\ \hline    
+\end{tabular} 
+ \caption{Performance of proposed system: Algorithm 1 on IITK database\label{tab:exp1_iitk}}
+\end{table}
+\end{frame}
+
+\begin{frame}
+\frametitle{CASIA}
+\begin{table}[ht]
+\centering 
+\begin{tabular}{| l || l | l | l | l | l | }
+    \hline
+    \multicolumn{6}{|c|}{CASIA}\\
+    \hline
+    \hline
+		  & 4 $\times$ 4 & 8 $\times$ 8 & 10 $\times$ 10 & 12 $\times$ 12 & 16 $\times$ 16 \\ \hline
+    \hline
+    Accuracy (\%) & 89.51        & 95.35	& 96.91		 & \textbf{97.03} & 94.46\\ \hline
+    FAR (\%) 	  & 9.07        & 1.94		& 1.56 	     	 & \textbf{1.51} & 1.99\\ \hline
+    FRR (\%)      & 11.89        & 7.34 	& 4.60 	     	 & \textbf{4.42} & 9.09\\ \hline
+    EER (\%)      & 10.74        & 5.69	      	& 3.30  	 &  \textbf{3.49} & 7.24\\ \hline    
+\end{tabular}
+ \caption{Performance of proposed system: Algorithm 1 on CASIA database\label{table:exp1_casia}}
+\end{table}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{PolyU}
+\begin{table}[ht]
+\centering 
+\begin{tabular}{| l || l | l | l | l | l | }
+    \hline
+    \multicolumn{6}{|c|}{PolyU}\\
+    \hline
+    \hline
+		  & 4 $\times$ 4 & 8 $\times$ 8 & 10 $\times$ 10 & 12 $\times$ 12 & 16 $\times$ 16 \\ \hline
+    \hline
+    Accuracy (\%) & 81.97        & 95.49	& 98.18		 & \textbf{98.38} & 98.10\\ \hline
+    FAR (\%) 	  & 15.78        & 3.74		& 1.09 	     	 & \textbf{0.80} & 0.98\\ \hline
+    FRR (\%)      & 20.27        & 5.27 	& 2.55 	     	 & \textbf{2.42} & 2.81\\ \hline
+    EER (\%)      & 18.31        & 4.77	      	& 1.99  	 &  \textbf{1.88} & 2.08\\ \hline    
+\end{tabular}
+ \caption{Performance of proposed system: Algorithm 1 on PolyU database\label{table:exp1_polyu}}
+\end{table}
+\end{frame}
+
+\begin{frame}
+\frametitle{IITK: ROC curve}
+\begin{figure}
+	\begin{center}
+	\includegraphics[scale=0.6]{images/Algorithm1_IITK.pdf}
+	\caption{Algorithm 1: IITK database}
+	\end{center}
+	\end{figure}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{CASIA: ROC curve}
+\begin{figure}
+	\begin{center}
+	\includegraphics[scale=0.6]{images/Algorithm1_CASIA.pdf}
+	\caption{Algorithm 1: CASIA database}
+	%\label{fig:bsa}
+	\end{center}
+	\end{figure}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{PolyU: ROC curve}
+\begin{figure}
+	\begin{center}
+	\includegraphics[scale=0.6]{images/Algorithm1_PolyU.pdf}
+	\caption{Algorithm 1: PolyU database}
+	%\label{fig:bsa}
+	\end{center}
+	\end{figure}
+\end{frame}
+
+\subsection{Experiment 2}
+\begin{frame}
+\frametitle{IITK}
+\begin{table}[ht]
+\centering 
+\begin{tabular}{| l || l | l | l | l | }
+    \hline
+    \multicolumn{5}{|c|}{IITK}\\
+    \hline
+    \hline
+		  & $k$ = 5 & $k$ = 11 & $k$ = 15 & $k$ = 21 \\ \hline
+    \hline
+    Accuracy (\%) & 100 & 100 & 100& 100 \\ \hline
+    FAR (\%) 	  & 0   & 0   & 0  & 0 	 \\ \hline
+    FRR (\%)      & 0   & 0   & 0  & 0 	 \\ \hline
+    EER (\%)      & 0   & 0   & 0  &  0  \\ \hline    
+\end{tabular}
+ \caption{Performance of proposed system: Algorithm 2 on IITK database\label{table:exp2_iitk}}
+\end{table}
+\end{frame}
+
+\begin{frame}
+\frametitle{CASIA}
+\begin{table}[ht]
+\centering 
+\begin{tabular}{| l || l | l | l | l | }
+    \hline
+    \multicolumn{5}{|c|}{CASIA}\\
+    \hline
+    \hline
+		  & $k$ = 5 & $k$ = 11 & $k$ = 15 & $k$ = 21 \\ \hline
+    \hline
+    Accuracy (\%) & \textbf{99.89}   & 99.88& 99.87 &  99.88    \\ \hline
+    FAR (\%) 	  & \textbf{0.000298}& 0.0029& 0.037& 0.00021     \\ \hline
+    FRR (\%)      & \textbf{0.2157}  & 0.2364& 0.2157& 0.2364     \\ \hline
+    EER (\%)      & \textbf{0.2173}  & 0.240& 0.217388& 0.238    \\ \hline    
+\end{tabular}
+ \caption{Performance of proposed system: Algorithm 2 on CASIA database\label{table:exp2_casia}}
+\end{table}
+\end{frame}
+
+\begin{frame}
+\frametitle{PolyU}
+\begin{table}[ht]
+\centering 
+\begin{tabular}{| l || l | l | l | l |  }
+    \hline
+    \multicolumn{5}{|c|}{PolyU}\\
+    \hline
+    \hline
+		  & $k$ = 5 & $k$ = 11 & $k$ = 15 & $k$ = 21 \\ \hline
+    \hline
+    Accuracy (\%) & \textbf{99.9673}        & 99.9673	& 99.9673 & 99.9673  \\ \hline
+    FAR (\%) 	  & \textbf{0.0006729}     & 0.000673& 0.00067 & 0.0006729  \\ \hline
+    FRR (\%)      & \textbf{0.064766}        & 0.0648 	& 0.0648 & 0.0648    \\ \hline
+    EER (\%)      & \textbf{0.0648}        & 0.0651874	& 0.06476684& 0.064851 \\ \hline    
+\end{tabular}
+ \caption{Performance of proposed system: Algorithm 2 on PolyU database\label{table:exp2_polyu}}
+\end{table}
+\end{frame}
+
+\begin{frame}
+\frametitle{IITK: ROC curve}
+\begin{figure}
+	\begin{center}
+	\includegraphics[scale=0.6]{images/Algorithm2_IITK.pdf}
+	\caption{Algorithm 2: IITK database}
+	\end{center}
+	\end{figure}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{CASIA: ROC curve}
+\begin{figure}
+	\begin{center}
+	\includegraphics[scale=0.6]{images/Algorithm2_CASIA.pdf}
+	\caption{Algorithm 2: CASIA database}
+	%\label{fig:bsa}
+	\end{center}
+	\end{figure}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{PolyU: ROC curve}
+\begin{figure}
+	\begin{center}
+	\includegraphics[scale=0.6]{images/Algorithm2_PolyU.pdf}
+	\caption{Algorithm 2: PolyU database}
+	%\label{fig:bsa}
+	\end{center}
+	\end{figure}
+\end{frame}
+
+
+\subsection*{Equal Error Rates (\%)}
+\begin{frame}
+\begin{table}[ht]
+\centering 
+\begin{tabular}{| l | l | l | l |}
+    \hline
+    \multicolumn{4}{|c|}{Verification: Algorithm 1}\\
+    \hline
+    No. of Sub-images & PolyU & CASIA & IITK \\ \hline
+    $4 \times 4$      &  18.31 \%& 10.74 \% & 25.68 \%\\ \hline
+    $8 \times 8$      &  4.77 \%& 5.69 \% & 22.36 \%\\ \hline
+    $10 \times 10$    &  1.99 \%& 3.30 \% & 22.36 \%\\ \hline
+    $12 \times 12$    &  1.88 \%& 3.49 \% & 22.41 \%\\ \hline
+    $16 \times 16$    &  2.08 \%& 7.24 \% & 22.85 \%\\
+    \hline
+\end{tabular}
+\caption{EERs of the proposed system: Algorithm 1\label{table:v_accuracy_algorithm1}}
+\end{table}
+
+\begin{table}[ht]
+\centering 
+\begin{tabular}{| l | l | l | l |}
+    \hline
+    \multicolumn{4}{|c|}{Verification: Algorithm 2}\\
+    \hline
+    kernel ($k$) & PolyU & CASIA & IITK \\ \hline
+    5 		&  0.0648 \%	& 0.2173 \%      & 0 \% \\ \hline
+    11		&  0.0651 \%	& 0.240 \%	& 0 \%\\ \hline
+    15 		&  0.0648 \%	& 0.2173 \% 	& 0 \%\\ \hline
+    21 		&  0.0648 \%	& 0.238 \% 	& 0 \%\\ 
+    \hline
+\end{tabular}
+\caption{EERs of the proposed system: Algorithm 2\label{table:v_accuracy_algorithm2}}
+\end{table}
+\end{frame}
+
+
+\subsection{Experiment 3: Identification}
+\begin{frame}
+\frametitle{Identification}
+A subject image from testing set is picked up and queried against the entire training set. The best match is obtained. If the best match corresponds to the subject queried then such a match is said to be a \emph{correct match}. Similarly, $N$ subjects from testing set are queried. The identification based accuracy of the system is obtained as
+\begin{equation}
+  \text{Accuracy} = \frac{\sum_{i=1}^{N} q_i}{N} \times 100\%
+\end{equation}
+where $q_i$ is defined as
+\begin{equation}
+q_i = 
+  \begin{cases} 1 & \text{if } i^{th} \text{ subject is correctly identified by the system}\\0 & \text{otherwise} \end{cases}
+\end{equation}
+\end{frame}
+
+\begin{frame}
+\begin{table}[ht]
+\centering 
+\begin{tabular}{| l | l | l | l |}
+    \hline
+    \multicolumn{4}{|c|}{Top 1 match Accuracy: Algorithm 1}\\
+    \hline
+    No. of Sub-images & PolyU & CASIA & IITK \\ \hline
+    $4 \times 4$      &  88.76 \%& 97.94 \% & 91.44 \%\\ \hline
+    $8 \times 8$      &  99.96 \%& 99.06 \% & 93.42 \%\\ \hline
+    $10 \times 10$    &  99.74 \%& 99.43 \% & 92.10 \%\\ \hline
+    $12 \times 12$    &  99.77 \%& 99.44 \% & 92.11 \%\\ \hline
+    $16 \times 16$    &  99.87 \%& 98.00 \% & 89.47 \%\\
+    \hline
+\end{tabular}
+\caption{Identification Accuracy of the proposed system: Top best match\label{table:id_accuracy_algorithm1}}
+\end{table}
+
+\begin{table}[ht]
+\centering 
+\begin{tabular}{| l | l | l | l |}
+    \hline
+    \multicolumn{4}{|c|}{Top 1 match Accuracy: Algorithm 2}\\
+    \hline
+    kernel ($k$) & PolyU & CASIA & IITK \\ \hline
+    5 		&  100 \%	& 100 \%      & 100 \% \\ \hline
+    11		&  100 \%	& 100 \%	& 100 \%\\ \hline
+    15 		&  100 \%	& 100 \% 	& 100 \%\\ \hline
+    21 		&  100 \%	& 100 \% 	& 100 \%\\ 
+    \hline
+\end{tabular}
+\caption{Identification Accuracy of the proposed system: Top best match\label{table:id_accuracy_algorithm2}}
+\end{table}
+\end{frame}
+
+\subsection{Experiment 4: Comparison of Algorithm 1 and Algorithm 2}
+\begin{frame}
+\frametitle{Comparison of Algorithm 1 and Algorithm 2 on IITK database}
+\begin{figure}
+	\begin{center}
+	\includegraphics[scale=0.6]{images/Comparison_IITK.pdf}
+	\caption{IITK database}
+	\end{center}
+	\end{figure}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Comparison of Algorithm 1 and Algorithm 2 on CASIA database}
+\begin{figure}
+	\begin{center}
+	\includegraphics[scale=0.6]{images/Comparison_CASIA.pdf}
+	\caption{CASIA database}
+	%\label{fig:bsa}
+	\end{center}
+	\end{figure}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Comparison of Algorithm 1 and Algorithm 2 on PolyU database}
+\begin{figure}
+	\begin{center}
+	\includegraphics[scale=0.6]{images/Comparison_PolyU.pdf}
+	\caption{PolyU database}
+	%\label{fig:bsa}
+	\end{center}
+	\end{figure}
+\end{frame}
+
+\subsection{Experiment 5: Comparison of proposed system with \cite{ieee} and \cite{naresh}}
+\begin{frame}
+\frametitle{Comparison of proposed system with \cite{ieee} and \cite{naresh}}
+\begin{table}[ht]
+\centering 
+\begin{tabular}{| l | l | l | l | l |}
+    \hline
+     & Proposed system: & Proposed system:  & Zhang \cite{ieee} & Naresh \cite{naresh}\\
+    & Algorithm 1 & Algorithm 2 & &\\
+    \hline
+    \hline
+    ACC (\%) & 98.38 & \textbf{99.96} & 98.56 & 99.31 \\ \hline
+    FAR (\%)&  0.80	& \textbf{0.0006} & 0.44& 0.28 \\ \hline
+    FRR	(\%)& 2.42	& \textbf{0.0648} & 4.80 & 1.93 \\\hline
+    EER (\%)& 1.88 	&  \textbf{0.0647} & 3.76 & 0.91\\
+    \hline
+\end{tabular}
+\caption{Comparison of proposed system with \cite{ieee} and \cite{naresh}\label{table:compare_zhang_naresh}}
+\end{table}
+\end{frame}
+
+\subsection{Experiment 6: Robustness to occlusion}
+\begin{frame}
+\frametitle{Robustness to occlusion}
+\begin{itemize}
+	\item The performance of proposed method is evaluated on occluded images
+	\item The images are $0.1W \times 0.1H$, $0.2W \times 0.2H$, $0.3W \times 0.3H$, $0.4W \times 0.4H$, $0.5W \times 0.5H$ occluded
+	\begin{figure}
+	\begin{center}
+	\includegraphics[scale=0.26]{ppt_images/occluded_images.png}
+	%\caption{(a)$0.1W \times 0.1H$ (b)$0.2W \times 0.2H$ (c)$0.3W \times 0.3H$ (d)$0.4W \times 0.4H$ (e)$0.5W \times 0.5H$}
+	%\label{fig:bsa}
+	\end{center}
+	\end{figure}
+	\item The experiment is performed on PolyU database and the palmprint image is divided into 10 $\times$ 10 sub-images
+	\item Occluded sub-images do not participate in matching
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Robustness to occlusion}
+\begin{table}[ht]
+\centering 
+\begin{tabular}{| l || l | l | l | l | l |}
+    \hline
+    \multicolumn{6}{|c|}{PolyU}\\
+    \hline
+    \hline
+     & $0.1W \times 0.1H$ & $0.2 \times 0.2$ & $0.3 \times 0.3$ & $0.4 \times 0.4$ & $0.5 \times 0.5$ \\ \hline
+    \hline
+    ACC (\%) & 98.02 & 97.95 & 97.80 &  97.25 &  96.34\\ \hline
+    FAR (\%) & 0.99 & 1.27 & 2.28 & 3.11&  2.90\\ \hline
+    FRR (\%) & 2.95 & 2.82 & 2.14 & 2.39&  4.40\\ \hline
+    EER (\%) & 2.78 & 3.42&  2.28 & 3.11&  4.46\\ \hline    
+\end{tabular}
+\caption{Robustness to occlusion\label{table:LST_fil_palm_occ}}
+\end{table}
+\end{frame}
+
+\begin{frame}
+\frametitle{Robustness to occlusion}
+\begin{figure}[htp]
+\begin{center}
+\includegraphics[scale=0.6]{images/Occlusion_polyU.pdf}
+\caption{Robustness to occlusion\label{Occlusion_polyu} }
+\end{center}
+\end{figure}
+\end{frame}
+
+\section{Conclusions and Future Work}
+\subsection*{Conclusions}
+\begin{frame}
+\frametitle{Conclusions}
+	\begin{itemize}
+		\item Features extracted using Local Structure Tensor (LST) can be effectively used for person recognition using palmprint
+		\item The idea of extracting features from sub-images is to tackle the problem of occlusion 
+		\item The force field based filter strengthens the feature extraction ability of LST 
+		%in the sense that 
+		\item Using the orientation from Force Field Filter, LST matrix can be evaluated for only those specific pixels of the sub-image which belong to the dominant orientation bin 
+		%where the dominant orientation having been obtained from only the local neighbourhood of a pixel
+		\item This is crucial because it reduces computational time in the feature extraction step
+	\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Contd..}
+The Proposed System
+			\begin{itemize}
+				\item is robust to partial occlusion. Hence, a person with injuries can also be recognized by it 
+				\item performs well with low resolution palmprint images. Hence, even a low cost scanner can be used to achieve efficient performances 
+				\item performs equally well with acquisition devices which have constraints using pegs as well as those which are pegs-free. Hence, physically challenged people can also be enrolled and recognized 
+			\end{itemize}
+\end{frame}
+
+\subsection*{Future Work}
+\begin{frame}
+\frametitle{Future Work}
+	\begin{itemize}
+		\item The approach of force field based filter has been tested with only LST in the feature extraction step
+		\item The approach is generic enough and can be applied to other feature extraction techniques as well
+		\item The following aspects can be considered for further study
+		\begin{itemize}
+			\item this work has used only the orientation part of the force field. But it is worth to see the effect of the magnitude of the force
+			\item In Algorithm 1, the features are obtained from a mean matrix obtained from LST matrices of each individual pixels falling in the sub-image region. It is to be seen the possibility of finding the contribution of a pixel to the sub-image (for example, contribution of a pixel to texture in case of palmprint) so that this contribution can be used as a weight of a pixel, instead of using mean. This may improve the performance
+		\end{itemize}
+	\end{itemize}
+\end{frame}
+
+\section{References}
+\begin{frame}[allowframebreaks]
+\frametitle{References}
+\bibliography{mybibliography}
+\end{frame}
+
+\begin{frame}
+\begin{block}{}
+\begin{center}Thank You \end{center}
+\end{block}
+\end{frame}
+\begin{frame}
+\begin{block}{}
+\begin{center}Questions? and Suggestions  \end{center}
+\end{block} 
+\end{frame}
+\end{document}
